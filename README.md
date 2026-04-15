@@ -34,10 +34,50 @@ python geoshortmaker.py --prompt "India and Bangladesh have the most confusing b
 
 Custom voice:
 ```bash
-python geoshortmaker.py --prompt "The poorest reservation in America" --voice guy_michaels.mp3
+python geoshortmaker.py --prompt "The poorest reservation in America" --voice voices/guy_michaels.mp3
 ```
 
 Output lands in `runs/<prompt_slug>/` and a final export in `output/final_videos/`.
+
+## Voices
+
+The pipeline clones any voice from a short audio sample using Qwen TTS. Two voices are included:
+
+| File | Style | Best for |
+|------|-------|----------|
+| `voices/david_attenborough.mp3` | Calm, authoritative nature documentary | Geography, nature, slow-paced topics (default) |
+| `voices/guy_michaels.mp3` | Fast, energetic YouTube narrator | Rankings, lists, punchy viral topics |
+
+### Using the included voices
+
+With no `--voice` flag, the pipeline uses the Attenborough voice by default:
+```bash
+python geoshortmaker.py --prompt "Why is this river so dangerous"
+```
+
+To use a different included voice:
+```bash
+python geoshortmaker.py --prompt "Top 5 most dangerous cities" --voice voices/guy_michaels.mp3
+```
+
+### Adding your own voice
+
+1. Get a clean audio clip of the voice you want (10-60 seconds, no background music/noise)
+2. Save it as `.mp3` or `.wav` in the `voices/` folder
+3. Pass it with `--voice`:
+
+```bash
+python geoshortmaker.py --prompt "Your topic" --voice voices/my_custom_voice.mp3
+```
+
+The first run with a new voice takes a few extra seconds — Qwen enrolls the voice and caches the voice ID for future runs. After that it reuses the cached clone automatically.
+
+**Tips for good voice cloning:**
+- Use a sample with clear speech, no music or background noise
+- 15-30 seconds of audio is the sweet spot
+- The sample should match the energy you want (calm sample = calm narration)
+- Supported formats: `.mp3`, `.wav`, `.m4a`
+- Max file size: 10MB
 
 ## API Keys & Costs
 
@@ -75,4 +115,7 @@ pipeline/
   color_grade.py          # Cinematic color grading filter
   config.py               # Env loading, constants, paths
 generate_attenborough_audio.py  # Qwen voice cloning module
+voices/
+  david_attenborough.mp3      # Default narrator voice sample
+  guy_michaels.mp3            # Energetic YouTube narrator voice sample
 ```

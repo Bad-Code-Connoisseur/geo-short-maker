@@ -34,12 +34,21 @@ import requests
 # Paths and env
 # ──────────────────────────────────────────────────────────────────────────────
 ROOT = Path(__file__).resolve().parent
-VOICES_DIR = ROOT.parent / "voices"
+VOICES_DIR = ROOT / "voices"
+if not VOICES_DIR.exists():
+    VOICES_DIR = ROOT.parent / "voices"
 CACHE_FILE = VOICES_DIR / ".qwen_voice_cache.json"
 
-DEFAULT_VOICE_FILE = Path(
-    os.environ.get("DEFAULT_VOICE_FILE", str(ROOT.parent / "fonts" / "David Attenborough describes humanity.mp3"))
-).resolve()
+_default_voice_candidates = [
+    ROOT / "voices" / "david_attenborough.mp3",
+    ROOT.parent / "voices" / "david_attenborough.mp3",
+    ROOT.parent / "fonts" / "David Attenborough describes humanity.mp3",
+]
+_env_voice = os.environ.get("DEFAULT_VOICE_FILE", "").strip()
+if _env_voice:
+    DEFAULT_VOICE_FILE = Path(_env_voice).resolve()
+else:
+    DEFAULT_VOICE_FILE = next((p for p in _default_voice_candidates if p.exists()), _default_voice_candidates[0]).resolve()
 
 DASHSCOPE_API_KEY = os.environ.get("DASHSCOPE_API_KEY", "").strip()
 
