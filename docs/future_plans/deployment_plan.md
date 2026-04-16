@@ -17,6 +17,49 @@ The goal of this plan is to move toward a hosted setup where a video can be requ
 
 ---
 
+## 0. Before the Cloud: A Local Docker Environment
+
+> **Start here.** Cloud hosting is the long-term goal, but Docker is immediately useful *right now*, even on your local machine. Getting this working locally is the first milestone — and it's also the foundation everything else builds on.
+
+### The Concept
+
+Even before you think about deploying to a server, Docker gives you two immediate benefits on your own machine:
+
+1. **Reproducibility** — Anyone who clones the repo can run `docker compose up` and have the pipeline working in minutes, regardless of their OS or what they have installed. No more "works on my machine" debugging.
+
+2. **Isolation** — The pipeline's heavy dependencies (FFmpeg, Node.js, Playwright, Chromium) don't pollute your system. They live inside the container and can be removed cleanly.
+
+### What a Local Docker Setup Looks Like
+
+For local development, the goal is a simple `docker-compose.yml` that wires everything together:
+
+```
+docker compose up
+```
+
+That one command should:
+- Build the container image (Python + Node.js + FFmpeg + Playwright, all pre-installed)
+- Mount your local project directory into the container so edits take effect immediately without rebuilding
+- Pass your `.env` file into the container so API keys are available
+
+You would then run the pipeline inside the container:
+
+```bash
+docker compose run pipeline python geoshortmaker.py --prompt "your prompt here"
+```
+
+Output files (the `runs/` folder) would appear on your normal filesystem because the directory is mounted — not locked inside the container.
+
+### The `.env` and Secrets
+
+Your `.env` file contains API keys and should **never** be baked into the Docker image. Instead, Docker Compose can read it from your local filesystem at runtime and pass it in as environment variables. This is the correct, safe pattern — the image itself contains zero secrets.
+
+### When to Move to the Cloud
+
+Once the local Docker setup works reliably, moving to a cloud server is mostly a copy-paste of the same `Dockerfile`. The cloud-specific additions (object storage, job queue, database) layer on top of what's already working locally. You don't need to figure that all out now.
+
+---
+
 ## 1. Containerization (Docker)
 
 ### The Concept

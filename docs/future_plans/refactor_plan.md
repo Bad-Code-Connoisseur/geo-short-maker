@@ -149,6 +149,52 @@ This is called **reducing technical debt** — the accumulated "I'll fix this la
 
 ---
 
+## 7. Unit & Integration Testing
+
+### The Concept
+
+Right now, the only way to verify the pipeline works is to run the whole thing and watch what happens. That's slow (10+ minutes), expensive (burns API credits), and catches bugs too late. **Tests** let you verify individual pieces of the code in seconds, without touching any external APIs.
+
+There are two levels of testing that matter most for this project:
+
+**Unit Tests** check a single, isolated function. They don't call the internet, they don't render video, they don't spend money. They just verify that a given input produces the expected output. For example:
+
+- Does `normalize_script_plan()` correctly cap beat durations at 8.5 seconds?
+- Does `split_text_naturally()` never produce a chunk over 300 characters?
+- Does the `slugify()` function correctly handle special characters and spaces?
+- Does a `Beat` object with `duration_sec = -1` get caught by Pydantic validation?
+
+These tests run in milliseconds. You can run hundreds of them every time you save a file.
+
+**Integration Tests** check that multiple pieces work correctly *together*, often using fake ("mocked") versions of external services. For example:
+
+- Does the pipeline correctly load a saved `s1_script.json` and skip the Gemini call when resuming a run? (No real API call needed — just check the logic.)
+- Does the Whisper alignment function correctly update beat durations when given a pre-recorded set of word timestamps?
+- Does `gather_geo_data()` handle the case where Nominatim returns no boundary polygon gracefully — without crashing?
+
+### Why Tests Matter for a Pipeline Like This
+
+Pipelines are particularly prone to **regression bugs** — you fix one stage and accidentally break another. Without tests, you don't find out until you run a full end-to-end render and notice that beat 4 is missing or the audio is out of sync. With tests, you find it in 3 seconds when you run the test suite.
+
+Tests also act as **documentation**. A well-written test for `normalize_script_plan()` tells any future reader exactly what that function is supposed to do — more reliably than a comment ever could.
+
+### What "Mocking" Means
+
+Calling Gemini or DashScope from inside a test is a bad idea — it's slow, costs money, and fails if you're offline. **Mocking** is a technique where you replace the real API call with a fake that returns a pre-recorded response. The function being tested doesn't know the difference. This lets you test all the logic around an API call (parsing the response, handling errors, retrying) without ever touching the real API.
+
+Python's built-in `unittest.mock` module and the popular `pytest` library are the standard tools for this.
+
+### Practical Starting Point
+
+You don't need 100% test coverage to get value from tests. The highest-value tests for this project are:
+
+1. **Beat normalization logic** — This runs on every video and has subtle edge cases (duration clamping, consecutive type deduplication).
+2. **Whisper alignment** — Complex matching logic that is hard to debug mid-render.
+3. **Config validation** — Confirm that missing required keys raise a clear error at startup.
+4. **JSON extraction** — The `extract_json()` function handles multiple messy Gemini output formats; each format deserves a test case.
+
+---
+
 ## Summary of Benefits
 
 | Change | Benefit |
@@ -158,4 +204,5 @@ This is called **reducing technical debt** — the accumulated "I'll fix this la
 | Concurrency | 3–8x faster pipeline execution |
 | Error Handling | No more silent failures; clear, actionable error messages |
 | Prompt Engineering | Better videos, fewer crashes from LLM output, faster iteration |
+| Unit & Integration Tests | Catch regressions in seconds, not after a 10-minute render |
 | Project Cleanup | One clear entry point; no confusion about which file is "real" |
