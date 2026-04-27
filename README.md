@@ -1,15 +1,23 @@
 
+
 # GeoShortMaker
 
 Automated pipeline that generates geography YouTube Shorts from a text prompt. Give it a topic like *"Nobody wants to live in this state"* and it produces a 45-60 second vertical video with narration, captions, b-roll footage, map visuals, and background music.
 
 
 
-https://github.com/user-attachments/assets/e6d60657-fa19-4c36-9acf-a03148fb985f
 
 
+https://github.com/user-attachments/assets/9501098e-626d-4ce2-922c-357808f6c66e
+```bash
+python geoshortmaker.py --prompt "The greatest state"
+```
+https://github.com/user-attachments/assets/31f69858-928f-4129-95f9-36aa5c7410bd
 
-
+```bash
+python geoshortmaker.py --prompt "Cumberland Georgia (ATL)"
+```
+The pipeline can handle a wide range a prompts not just City,State. It can also include a interesting hook, and will choose the region based on the prompt (see "The greatest state")
 ## Pipeline Stages
 
 1. **S1 — Script**: Gemini generates a beat-by-beat script with narration, visual types, and overlay instructions
